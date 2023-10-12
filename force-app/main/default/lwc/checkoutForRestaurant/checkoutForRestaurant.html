@@ -1,0 +1,136 @@
+<template>
+    <template if:true={showOrderedDetails}>
+        <div class="slds-text-heading_large">
+            <b>Order Details</b>
+        </div>
+        <div class="slds-border_bottom slds-p-around_medium slds-m-bottom_small">
+            <template for:each={orderDetailsArray} for:item="order">
+                <div key={order.id} style="display: flex; align-items: center;" class="slds-m-bottom_medium">
+                    <div style="width: 45%; font-size: 18px">
+                        <ul>
+                            <li>{order.name}</li>
+                        </ul>
+                    </div>
+                    <div style="width: 33%">
+                        <div class="btn-group">
+                            <button name={order.name} data-id={order.id} onclick={minusOnClick}>-</button>
+                            <button>{order.count}</button>
+                            <button name={order.name} data-id={order.id} onclick={plusOnClick}>+</button>
+                        </div>
+                    </div>
+                    <div style="width: 17%; font-size: 18px" class="slds-text-align_center">
+                        <span>{order.totalPrice}</span>
+                    </div>
+                    <div style="width: 5%;">
+                        <lightning-icon data-id={order.id} icon-name="utility:delete" size="small" onclick={handleOnDelete} variant="warning"></lightning-icon>
+                    </div>
+                </div>
+            </template>
+        </div>
+        <div class="slds-m-bottom_medium" onclick={handleAddMoreItems}>
+            <span style="font-size: 18px;">+ Add more items</span>
+        </div>
+        <div class="slds-form-element slds-border_bottom slds-p-vertical_medium">
+            <div class="slds-form-element__control slds-input-has-icon slds-input-has-icon_right">
+                <lightning-icon size="x-small" class="slds-icon slds-input__icon slds-input__icon_right slds-icon-text-default" icon-name="utility:add"></lightning-icon>
+                <lightning-input type="text" placeholder="Add cooking requests" onchange={handleInputOnchange} label="Cooking Instruction" variant="label-hidden"></lightning-input>
+                <!-- <input type="text" placeholder="Add cooking requests" class="slds-input" /> -->
+            </div>
+        </div>
+        <div class="slds-border_bottom slds-p-vertical_medium setmargin">
+            <div class="slds-text-heading_large">
+                <b>Bill Details</b>
+            </div>
+            <div class="slds-p-around_medium" style="font-size: 18px;">
+                <div style="display: flex;">
+                    <div style="width: 70%;">
+                        <span>Item Total</span>
+                    </div>
+                    <div class="slds-text-align_right" style="width: 30%;">
+                        <b>
+                            <lightning-formatted-number value={totalAmount} format-style="currency"
+                                currency-code="INR"></lightning-formatted-number>
+                        </b>
+                    </div>
+                </div>
+                <div class="slds-p-vertical_medium" style="display: flex;">
+                    <div style="width: 70%;">
+                        <span>GST (5%)</span>
+                    </div>
+                    <div class="slds-text-align_right" style="width: 30%;">
+                        <b>
+                            <lightning-formatted-number value={GstAmount} format-style="currency"
+                                currency-code="INR"></lightning-formatted-number>
+                        </b>
+                    </div>
+                </div>
+                <div class="slds-border_top slds-p-top_medium" style="display: flex;">
+                    <div style="width: 70%;">
+                        <b>To  Pay</b>
+                    </div>
+                    <div class="slds-text-align_right" style="width: 30%;">
+                        <b>
+                            <lightning-formatted-number value={toPayAmount} format-style="currency"
+                                currency-code="INR"></lightning-formatted-number>
+                        </b>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="slds-m-horizontal_large slds-text-heading_medium slds-p-horizontal_medium slds-text-align_middle" style="height:50px; border:1px solid #1ca672; border-radius:10px; display:flex; align-items: center; background-color:#1ca672; color:#fff; position:fixed; bottom: 25px; left: 0; right: 0">
+            <div style="width:60%">
+                <lightning-formatted-number value={showCount}></lightning-formatted-number>&nbsp;
+                <span>|</span>&nbsp;
+                <lightning-formatted-number value={toPayAmount} format-style="currency"
+                currency-code="INR"></lightning-formatted-number>
+            </div>
+            <div style="width:40%;" onclick={handleconfirmorder}>
+               <lightning-formatted-text value="Confirm Order"></lightning-formatted-text>
+            </div>
+        </div>
+        <div style="position:fixed; bottom:0;left:0;right: 0; background-color:#fff; height:25px">
+
+        </div>
+    </template>
+    <template if:true={showPopup}>
+        <section role="dialog" tabindex="-1" aria-modal="true" aria-label="Meaningful description of the modal content"
+        class="slds-modal slds-fade-in-open">
+        <div class="slds-modal__container">
+            <!-- <button class="slds-button slds-button_icon slds-modal__close slds-button_icon-inverse" onclick={hideModalBox}>
+                <svg class="slds-button__icon slds-button__icon_large slds-button_icon-brand" aria-hidden="true">
+                    <use xlink:href="/assets/icons/utility-sprite/svg/symbols.svg#close"></use>
+                </svg>
+                <span class="slds-assistive-text">Cancel and close</span>
+            </button> -->
+            <div class="slds-modal__header">
+                <h1 id="modal-heading-01" class="slds-modal__title slds-hyphenate">
+                    <b>Please add your Details...</b>
+                </h1>
+              </div>
+            <div class="slds-modal__content slds-p-around_medium" id="modal-content-id-1"> 
+                <lightning-input required="true" type="text" name="name" label="Name" onchange={handleInput}></lightning-input>
+                <lightning-input required="true" type="tel" name="phone" label="Phone" onchange={handleInput}></lightning-input>
+            </div>
+            <div class="slds-modal__footer">
+                <button class="slds-button slds-button_destructive" aria-label="Cancel and close" onclick={hideModalBox}>Cancel / Close</button>
+                <template if:true={enableLogin}>
+                    <button class="slds-button slds-button_brand" onclick={handlePopupConfirmOnClick}>Confirm</button>
+                </template>
+                <template if:false={enableLogin}>
+                    <button class="slds-button slds-button_brand" disabled onclick={handlePopupConfirmOnClick}>Confirm</button>
+                </template>
+            </div>
+        </div>
+    </section>
+    <div class="slds-backdrop slds-backdrop_open" role="presentation"></div>
+    </template>
+    <template if:false={showOrderedDetails}>
+        <div class="slds-border_bottom slds-p-bottom_medium slds-m-bottom_medium">
+            <lightning-button label="Menu Items" icon-position="left" onclick={backButtonOnClick}
+                icon-name="utility:back"></lightning-button>
+        </div>
+        <div class="slds-text-align_center slds-text-heading_medium slds-p-top_xx-large">
+            <b> Your cart is empty. Add something from the menu.</b>
+        </div>
+    </template>
+</template>
